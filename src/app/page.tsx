@@ -1,55 +1,74 @@
-import Image from "next/image";
-import Link from "next/link";
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
+'use client';
 
-export default function Home() {
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { IDKitWidget, VerificationLevel } from '@worldcoin/idkit';
+
+export default function SignIn() {
+  const router = useRouter();
+
+  const handleVerify = async (proof: any) => {
+    const response = await fetch('/api/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(proof),
+    });
+
+    if (response.ok) {
+      const { verified } = await response.json();
+      return verified;
+    } else {
+      const { error } = await response.json();
+      throw new Error(error);
+    }
+  };
+
+  const onSuccess = () => {
+    console.log("Verification successful");
+    router.push('/communitiespage');
+  };
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
-              <div className="flex flex-col justify-center space-y-4">
-                <div className="space-y-2">
-                  <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                    Secure and Decentralized DAO Governance
-                  </h1>
-                  <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    DAOcast is a world ID based DAO governance platform that
-                    empowers communities to make decisions securely and
-                    transparently.
-                  </p>
-                </div>
-                <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Link
-                    href="/signin"
-                    className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-black text-white hover:bg-gray-800"
-                  >
-                    Try DAOcast
-                  </Link>
-                  <Link
-                    href="#"
-                    className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                  >
-                    Learn More
-                  </Link>
-                </div>
-              </div>
-              <Image
-                src="/img1.jpeg"
-                width={550}
-                height={310}
-                alt="DAOcast"
-                className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last lg:aspect-square"
-              />
-            </div>
-          </div>
-        </section>
-        {/* Add other sections here */}
-      </main>
-      <Footer />
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="flex w-full max-w-4xl bg-transparent shadow-lg rounded-lg overflow-hidden">
+        <div className="w-1/2 bg-black p-12 flex items-center justify-center">
+          <h1 className="text-4xl font-bold text-white">DAOcast</h1>
+        </div>
+        <div className="w-1/2 p-12 bg-white bg-opacity-70">
+          <h2 className="text-3xl font-bold mb-4 text-center">Login or create account</h2>
+          <p className="mb-8 text-gray-600 text-center">Connect and verify with World ID.</p>
+          <IDKitWidget
+            app_id="app_3c762ce1e3076d670a6ba49788c80c4a"
+            action="trial-world-poll"
+            onSuccess={onSuccess}
+            handleVerify={handleVerify}
+            verification_level={VerificationLevel.Device}
+          >
+            {({ open }) => (
+              <button
+                className="w-full bg-black text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-200 mb-4"
+                onClick={open}
+              >
+                Verify with World ID
+              </button>
+            )}
+          </IDKitWidget>
+          <div className="text-center my-4 text-gray-500">OR</div>
+          <button className="w-full bg-black text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-200 mb-8">
+            Verify with Wallet & World ID
+          </button>
+          <a href="https://apps.apple.com/no/app/world-app-worldcoin-wallet/id1560859847" 
+             className="block text-blue-500 hover:underline mb-8 text-center"
+          >
+            Get the WorldID App →
+          </a>
+          <p className="text-sm text-gray-500 text-center whitespace-nowrap">
+            Sybil-resistant identity verification powered by World ID.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
