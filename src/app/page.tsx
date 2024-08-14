@@ -34,7 +34,7 @@ export default function SignIn() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="flex w-full max-w-4xl bg-transparent shadow-lg rounded-lg overflow-hidden">
         <div className="w-1/2 bg-black p-12 flex items-center justify-center">
-          <h1 className="text-4xl font-bold text-white">DAOcast</h1>
+          <h1 className="text-4xl font-bold text-white">World Poll</h1>
         </div>
         <div className="w-1/2 p-12 bg-white bg-opacity-70">
           <h2 className="text-3xl font-bold mb-4 text-center">Login or create account</h2>
