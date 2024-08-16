@@ -37,7 +37,7 @@ export default function SignIn() {
 
   const onSuccess = () => {
     console.log("Verification successful");
-    router.push('./mainpage');
+    router.push('./pollpage');
   };
 
   return (
