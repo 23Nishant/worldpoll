@@ -3,10 +3,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { IDKitWidget, VerificationLevel } from '@worldcoin/idkit';
+import { useWallet } from '../hooks/useWallet';
 
 export default function SignIn() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const { isActive, account, connect, disconnect } = useWallet();
+  const [verificationStatus, setVerificationStatus] = useState('');
+  const [isWalletVerification, setIsWalletVerification] = useState(false);
+  const [isWorldIDVerified, setIsWorldIDVerified] = useState(false);
 
   const handleVerify = async (proof: any) => {
     try {
@@ -35,9 +40,44 @@ export default function SignIn() {
     }
   };
 
-  const onSuccess = () => {
-    console.log("Verification successful");
-    router.push('./pollpage');
+  const onSuccess = async () => {
+    console.log("World ID Verification successful");
+    setIsWorldIDVerified(true);
+    if (isWalletVerification) {
+      setVerificationStatus('World ID verified. Connecting wallet...');
+      await connectWallet();
+    } else {
+      router.push('./pollpage');
+    }
+  };
+
+  const connectWallet = async () => {
+    try {
+      if (!isActive) {
+        await connect();
+      }
+      
+      if (!isActive || !account) {
+        setVerificationStatus('Wallet connection failed. Please try again.');
+        return;
+      }
+
+      setVerificationStatus('Wallet connected successfully');
+      router.push('./pollpage');
+    } catch (error) {
+      console.error('Wallet connection error:', error);
+      setVerificationStatus('Wallet connection failed. Please try again.');
+    }
+  };
+
+  const handleWalletAndWorldIDVerify = () => {
+    setIsWalletVerification(true);
+    const worldIDWidget = document.getElementById('world-id-widget');
+    if (worldIDWidget) {
+      (worldIDWidget as any).click();
+    } else {
+      setVerificationStatus('World ID widget not found');
+    }
   };
 
   return (
@@ -58,17 +98,32 @@ export default function SignIn() {
           >
             {({ open }) => (
               <button
+                id="world-id-widget"
                 className="w-full bg-black text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-200 mb-4"
-                onClick={open}
+                onClick={() => {
+                  setIsWalletVerification(false);
+                  open();
+                }}
               >
                 Verify with World ID
               </button>
             )}
           </IDKitWidget>
           <div className="text-center my-4 text-gray-500">OR</div>
-          <button className="w-full bg-black text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-200 mb-8">
-            Verify with Wallet & World ID
+          <button 
+            className="w-full bg-black text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-200 mb-8"
+            onClick={handleWalletAndWorldIDVerify}
+          >
+            Verify with World ID & Wallet
           </button>
+          {isWorldIDVerified && isWalletVerification && !isActive && (
+            <button 
+              className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition duration-200 mb-8"
+              onClick={connectWallet}
+            >
+              Connect Wallet
+            </button>
+          )}
           <a href="https://apps.apple.com/no/app/world-app-worldcoin-wallet/id1560859847" 
              className="block text-blue-500 hover:underline mb-8 text-center"
           >
@@ -78,6 +133,8 @@ export default function SignIn() {
             Sybil-resistant identity verification powered by World ID.
           </p>
           {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
+          {verificationStatus && <p className="text-blue-500 mt-4 text-center">{verificationStatus}</p>}
+          {isActive && <p className="text-green-500 mt-4 text-center">Wallet connected: {account}</p>}
         </div>
       </div>
     </div>

@@ -1,16 +1,18 @@
-import type { Metadata } from 'next'
+'use client';
+
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { Web3ReactProvider } from '@web3-react/core'
+import { MetaMask } from "@web3-react/metamask"
+import { hooks as metaMaskHooks, metaMask } from '../hooks/metaMask'
 
-// If you're using a custom font, you can set it up like this:
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata: Metadata = {
-  title: 'Sign In | World Poll',
-  description: 'Sign in or create an account for World Poll',
-}
+const connectors: [MetaMask, typeof metaMaskHooks][] = [
+  [metaMask, metaMaskHooks],
+]
 
-export default function SignInLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
@@ -18,19 +20,21 @@ export default function SignInLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="signin-layout">
-          <header>
-            {/* You can add a header here if needed */}
-          </header>
+        <Web3ReactProvider connectors={connectors}>
+          <div className="signin-layout">
+            <header>
+              {/* You can add a header here if needed */}
+            </header>
 
-          <main>
-            {children}
-          </main>
+            <main>
+              {children}
+            </main>
 
-          <footer>
-            {/* You can add a footer here if needed */}
-          </footer>
-        </div>
+            <footer>
+              {/* You can add a footer here if needed */}
+            </footer>
+          </div>
+        </Web3ReactProvider>
       </body>
     </html>
   )
