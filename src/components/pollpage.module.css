@@ -70,3 +70,12 @@
 .voteButton:hover {
   background-color: #005bb5;
 }
+
+.buttonGroup {
+  display: flex;
+  gap: 10px; 
+}
+
+.createPollSection button {
+  flex: 1;
+}
