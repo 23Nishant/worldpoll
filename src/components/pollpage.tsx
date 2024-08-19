@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import styles from './pollpage.module.css';
-import { getFrameHtmlResponse } from '../components/frameUtils'; 
 
 interface Poll {
   question: string;
@@ -62,37 +61,6 @@ const PollPage: React.FC = () => {
     }
   };
 
-  const createAndPostAsFrame = async () => {
-    if (question && option1 && option2) {
-      const voteCount = { option1: 0, option2: 0 };
-
-      // Create frame HTML
-      const frameHtml = getFrameHtmlResponse(question, option1, option2, voteCount);
-
-      // Save the frame to a folder (call your backend API)
-      const response = await fetch('/api/saveFrame', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ frameHtml }),
-      });
-
-      if (response.ok) {
-        // Handle success (e.g., show a success message)
-        alert('Frame created and saved successfully!');
-      } else {
-        // Handle failure (e.g., show an error message)
-        alert('Failed to save frame.');
-      }
-
-      // Reset the form
-      setQuestion('');
-      setOption1('');
-      setOption2('');
-    }
-  };
-
   return (
     <div className={styles.pollPage}>
       <h1>Create Poll</h1>
@@ -115,10 +83,7 @@ const PollPage: React.FC = () => {
           value={option2} 
           onChange={(e) => setOption2(e.target.value)} 
         />
-        <div className={styles.buttonGroup}>
-          <button onClick={createPoll}>Create Poll</button>
-          <button onClick={createAndPostAsFrame}>Create and Post as Frame</button>
-        </div>
+        <button onClick={createPoll}>Create Poll</button>
       </div>
 
       <h2>Existing Polls</h2>
