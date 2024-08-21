@@ -61,39 +61,6 @@ const PollPage: React.FC = () => {
     }
   };
 
-  const createAndPostAsFrame = async () => {
-    if (question && option1 && option2) {
-      const newPoll: Poll = {
-        question,
-        options: [option1, option2],
-        votes: [0, 0],
-      };
-  
-      setPolls([...polls, newPoll]);
-      setQuestion('');
-      setOption1('');
-      setOption2('');
-  
-      // Call server-side API to save the frame
-      const response = await fetch('/api/saveFrame', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          question,
-          option1,
-          option2,
-          voteCount: { option1: 0, option2: 0 }, // Assuming initial vote count
-        }),
-      });
-  
-      if (!response.ok) {
-        console.error('Failed to save frame');
-      }
-    }
-  };
-  
   return (
     <div className={styles.pollPage}>
       <h1>Create Poll</h1>
@@ -116,10 +83,7 @@ const PollPage: React.FC = () => {
           value={option2} 
           onChange={(e) => setOption2(e.target.value)} 
         />
-        <div className={styles.buttonGroup}>
-          <button onClick={createPoll}>Create Poll</button>
-          <button onClick={createAndPostAsFrame}>Create and Post as Frame</button>
-        </div>
+        <button onClick={createPoll}>Create Poll</button>
       </div>
 
       <h2>Existing Polls</h2>
