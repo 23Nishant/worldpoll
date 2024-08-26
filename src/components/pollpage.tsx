@@ -1,7 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import styles from './pollpage.module.css';
+
+const DynamicPieChart = dynamic(() => import('./DynamicPieChart'), { ssr: false });
 
 interface Poll {
   question: string;
@@ -37,6 +40,11 @@ const PollPage: React.FC = () => {
   const [question, setQuestion] = useState('');
   const [option1, setOption1] = useState('');
   const [option2, setOption2] = useState('');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleVote = (pollIndex: number, optionIndex: number) => {
     setPolls(prevPolls => {
@@ -61,10 +69,19 @@ const PollPage: React.FC = () => {
     }
   };
 
+  const calculatePercentage = (votes: number, total: number): string => {
+    if (total === 0) return '0%';
+    return `${((votes / total) * 100).toFixed(1)}%`;
+  };
+
   return (
     <div className={styles.pollPage}>
-      <h1>Create Poll</h1>
+      <h1 className={styles.title}>Community Polls</h1>
+      <p className={styles.description}>
+        Create a new poll or vote on existing ones. Share your opinion!
+      </p>
       <div className={styles.createPollSection}>
+        <h2 className={styles.subtitle}>Create a New Poll</h2>
         <input 
           type="text" 
           placeholder="Poll question" 
@@ -86,22 +103,46 @@ const PollPage: React.FC = () => {
         <button onClick={createPoll}>Create Poll</button>
       </div>
 
-      <h2>Existing Polls</h2>
+      <h2 className={styles.subtitle}>Existing Polls</h2>
       <div className={styles.pollContainer}>
-        {polls.map((poll, pollIndex) => (
-          <div key={pollIndex} className={styles.poll}>
-            <h2>{poll.question}</h2>
-            {poll.options.map((option, optionIndex) => (
-              <button
-                key={optionIndex}
-                onClick={() => handleVote(pollIndex, optionIndex)}
-                className={styles.voteButton}
-              >
-                {option} ({poll.votes[optionIndex]})
-              </button>
-            ))}
-          </div>
-        ))}
+        {polls.map((poll, pollIndex) => {
+          const totalVotes = poll.votes.reduce((sum, current) => sum + current, 0);
+          return (
+            <div key={pollIndex} className={styles.poll}>
+              <h3 className={styles.pollQuestion}>{poll.question}</h3>
+              <div className={styles.pollContent}>
+                <div className={styles.voteButtons}>
+                  {poll.options.map((option, optionIndex) => (
+                    <button
+                      key={optionIndex}
+                      onClick={() => handleVote(pollIndex, optionIndex)}
+                      className={styles.voteButton}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+                <div className={styles.voteResults}>
+                  {poll.options.map((option, optionIndex) => (
+                    <div key={optionIndex} className={styles.voteResult}>
+                      <span className={styles.optionName}>{option}:</span>
+                      <span className={styles.voteCount}>{poll.votes[optionIndex]} votes</span>
+                      <span className={styles.votePercentage}>
+                        ({calculatePercentage(poll.votes[optionIndex], totalVotes)})
+                      </span>
+                    </div>
+                  ))}
+                  <div className={styles.totalVotes}>Total votes: {totalVotes}</div>
+                </div>
+                {isClient && (
+                  <div className={styles.chartContainer}>
+                    <DynamicPieChart poll={poll} />
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

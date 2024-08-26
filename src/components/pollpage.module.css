@@ -2,80 +2,175 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 40px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 800;
+  color: #000;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.description {
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 18px;
+  max-width: 600px;
 }
 
 .createPollSection {
   width: 100%;
-  max-width: 500px;
+  max-width: 600px;
   background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
+  transition: box-shadow 0.3s ease;
+}
+
+.createPollSection:hover {
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
 .createPollSection input {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
   font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.createPollSection input:focus {
+  border-color: #000;
+  outline: none;
 }
 
 .createPollSection button {
   width: 100%;
-  padding: 10px;
-  background-color: black;
+  padding: 12px;
+  background-color: #000;
   color: #fff;
   border: none;
-  border-radius: 5px;
-  font-size: 16px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .createPollSection button:hover {
-  background-color: black;
+  background-color: #333;
+  transform: translateY(-2px);
 }
 
 .pollContainer {
   width: 100%;
-  max-width: 600px;
+  max-width: 900px;
 }
 
 .poll {
   background-color: #fff;
-  padding: 20px;
+  padding: 25px;
+  margin-bottom: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.poll:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+.pollQuestion {
   margin-bottom: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-size: 22px;
+  color: #333;
+}
+
+.pollContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.voteButtons {
+  flex: 1;
+  margin-right: 20px;
 }
 
 .voteButton {
-  display: inline-block;
-  padding: 10px 15px;
-  margin-right: 10px;
-  margin-top: 10px;
-  background-color: black;
+  display: block;
+  width: 100%;
+  padding: 12px 20px;
+  margin-bottom: 10px;
+  background-color: #000;
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .voteButton:hover {
-  background-color: #005bb5;
+  background-color: #333;
+  transform: translateY(-2px);
 }
 
-.buttonGroup {
-  display: flex;
-  gap: 10px; 
-}
-
-.createPollSection button {
+.voteResults {
   flex: 1;
+  background-color: #f8f8f8;
+  padding: 15px;
+  border-radius: 8px;
+  margin-right: 20px;
+}
+
+.voteResult {
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.optionName {
+  font-weight: 600;
+  margin-right: 5px;
+}
+
+.voteCount {
+  color: #666;
+}
+
+.votePercentage {
+  margin-left: 5px;
+  color: #000;
+  font-weight: 600;
+}
+
+.totalVotes {
+  margin-top: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.chartContainer {
+  flex: 1;
+  max-width: 200px;
 }
