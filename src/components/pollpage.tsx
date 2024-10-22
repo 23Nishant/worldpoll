@@ -12,6 +12,8 @@ const DynamicPieChart = dynamic(() => import("./DynamicPieChart"), {
 interface Poll {
   question: string;
   options: string[];
+
+  
   votes: number[];
 }
 
@@ -19,6 +21,7 @@ const initialPolls: Poll[] = [
   {
     question: "Favorite Programming Language",
     options: ["JavaScript", "Python"],
+
     votes: [0, 0],
   },
   {

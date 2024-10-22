@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@auth/core": "^0.35.3",
+    "@auth/nextjs": "^0.0.0-380f8d56",
     "@web3-react/core": "^8.2.3",
     "@web3-react/metamask": "^8.2.4",
     "@worldcoin/idkit": "^1.3.0",
@@ -16,7 +18,8 @@
     "chart.js": "^4.4.4",
     "ethers": "^6.13.2",
     "eventemitter3": "^5.0.1",
-    "next": "14.2.5",
+    "next": "^13.5.6",
+    "next-auth": "^4.24.8",
     "nvm": "^0.0.4",
     "react": "^18",
     "react-chartjs-2": "^5.2.0",
