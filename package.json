@@ -9,8 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@auth/core": "^0.35.3",
+    "@auth/core": "^0.34.2",
     "@auth/nextjs": "^0.0.0-380f8d56",
+    "@prisma/client": "^5.21.1",
     "@web3-react/core": "^8.2.3",
     "@web3-react/metamask": "^8.2.4",
     "@worldcoin/idkit": "^1.3.0",
@@ -21,6 +22,7 @@
     "next": "^13.5.6",
     "next-auth": "^4.24.8",
     "nvm": "^0.0.4",
+    "pg": "^8.13.1",
     "react": "^18",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18"
@@ -33,6 +35,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
     "postcss": "^8.4.41",
+    "prisma": "^5.21.1",
     "sass": "^1.77.8",
     "tailwindcss": "^3.4.10",
     "typescript": "^5"

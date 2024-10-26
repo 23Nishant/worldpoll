@@ -10,74 +10,76 @@ const DynamicPieChart = dynamic(() => import("./DynamicPieChart"), {
 });
 
 interface Poll {
+  id: number;
   question: string;
   options: string[];
-
-  
   votes: number[];
 }
 
-const initialPolls: Poll[] = [
-  {
-    question: "Favorite Programming Language",
-    options: ["JavaScript", "Python"],
-
-    votes: [0, 0],
-  },
-  {
-    question: "Preferred Frontend Framework",
-    options: ["React", "Vue"],
-    votes: [0, 0],
-  },
-  {
-    question: "Best Cloud Provider",
-    options: ["AWS", "Azure"],
-    votes: [0, 0],
-  },
-  {
-    question: "Most Exciting Tech Trend",
-    options: ["AI", "Blockchain"],
-    votes: [0, 0],
-  },
-];
-
 const PollPage: React.FC = () => {
-  const [polls, setPolls] = useState<Poll[]>(initialPolls);
+  const [polls, setPolls] = useState<Poll[]>([]);
   const [question, setQuestion] = useState("");
   const [option1, setOption1] = useState("");
   const [option2, setOption2] = useState("");
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    fetchPolls();
   }, []);
 
-  const handleVote = (pollIndex: number, optionIndex: number) => {
-    setPolls((prevPolls) => {
-      const newPolls = [...prevPolls];
-      newPolls[pollIndex].votes[optionIndex]++;
-      return newPolls;
-    });
-  };
-
-  const createPoll = () => {
-    if (question && option1 && option2) {
-      const newPoll: Poll = {
-        question,
-        options: [option1, option2],
-        votes: [0, 0],
-      };
-
-      setPolls([...polls, newPoll]);
-      setQuestion("");
-      setOption1("");
-      setOption2("");
+  const fetchPolls = async () => {
+    try {
+      const response = await fetch("/api/polls");
+      if (!response.ok) throw new Error("Failed to fetch polls");
+      const fetchedPolls = await response.json();
+      setPolls(fetchedPolls);
+    } catch (error) {
+      console.error("Error fetching polls:", error);
     }
   };
 
-  const calculatePercentage = (votes: number, total: number): string => {
-    if (total === 0) return "0%";
-    return `${((votes / total) * 100).toFixed(1)}%`;
+  const createPoll = async () => {
+    if (question && option1 && option2) {
+      const newPoll = {
+        question,
+        options: [option1, option2],
+      };
+
+      try {
+        const response = await fetch("/api/polls", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newPoll),
+        });
+
+        if (!response.ok) throw new Error("Failed to create poll");
+        
+        await fetchPolls(); // Refresh polls after creation
+        setQuestion("");
+        setOption1("");
+        setOption2("");
+      } catch (error) {
+        console.error("Error creating poll:", error);
+      }
+    }
+  };
+
+  const handleVote = async (pollId: number, optionIndex: number) => {
+    try {
+      const response = await fetch("/api/polls", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ pollId, optionIndex }),
+      });
+
+      if (!response.ok) throw new Error("Failed to vote");
+      await fetchPolls(); // Refresh polls after voting
+    } catch (error) {
+      console.error("Error voting:", error);
+    }
   };
 
   return (
@@ -85,9 +87,7 @@ const PollPage: React.FC = () => {
       <Navbar />
       <main className={styles.pollPage}>
         <h1 className={styles.title}>Community Polls</h1>
-        <p className={styles.description}>
-          Create a new poll or vote on existing ones. Share your opinion!
-        </p>
+        
         <div className={styles.createPollSection}>
           <h2 className={styles.subtitle}>Create a New Poll</h2>
           <input
@@ -95,74 +95,59 @@ const PollPage: React.FC = () => {
             placeholder="Poll question"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
+            className={styles.input}
           />
           <input
             type="text"
             placeholder="Option 1"
             value={option1}
             onChange={(e) => setOption1(e.target.value)}
+            className={styles.input}
           />
           <input
             type="text"
             placeholder="Option 2"
             value={option2}
             onChange={(e) => setOption2(e.target.value)}
+            className={styles.input}
           />
-          <button onClick={createPoll}>Create Poll</button>
+          <button 
+            onClick={createPoll}
+            className={styles.createButton}
+            disabled={!question || !option1 || !option2}
+          >
+            Create Poll
+          </button>
         </div>
 
-        <h2 className={styles.subtitle}>Existing Polls</h2>
-        <div className={styles.pollContainer}>
-          {polls.map((poll, pollIndex) => {
-            const totalVotes = poll.votes.reduce(
-              (sum, current) => sum + current,
-              0
-            );
-            return (
-              <div key={pollIndex} className={styles.poll}>
+        <div className={styles.pollsSection}>
+          <h2 className={styles.subtitle}>Existing Polls</h2>
+          <div className={styles.pollContainer}>
+            {polls.map((poll) => (
+              <div key={poll.id} className={styles.poll}>
                 <h3 className={styles.pollQuestion}>{poll.question}</h3>
                 <div className={styles.pollContent}>
                   <div className={styles.voteButtons}>
-                    {poll.options.map((option, optionIndex) => (
+                    {poll.options.map((option, index) => (
                       <button
-                        key={optionIndex}
-                        onClick={() => handleVote(pollIndex, optionIndex)}
+                        key={index}
                         className={styles.voteButton}
+                        onClick={() => handleVote(poll.id, index)}
                       >
-                        {option}
+                        {option} ({poll.votes[index]} votes)
                       </button>
                     ))}
                   </div>
-                  <div className={styles.voteResults}>
-                    {poll.options.map((option, optionIndex) => (
-                      <div key={optionIndex} className={styles.voteResult}>
-                        <span className={styles.optionName}>{option}:</span>
-                        <span className={styles.voteCount}>
-                          {poll.votes[optionIndex]} votes
-                        </span>
-                        <span className={styles.votePercentage}>
-                          (
-                          {calculatePercentage(
-                            poll.votes[optionIndex],
-                            totalVotes
-                          )}
-                          )
-                        </span>
-                      </div>
-                    ))}
-                    <div className={styles.totalVotes}>
-                      Total votes: {totalVotes}
-                    </div>
+                  <div className={styles.totalVotes}>
+                    Total votes: {poll.votes.reduce((a, b) => a + b, 0)}
                   </div>
-                  {isClient && (
-                    <div className={styles.chartContainer}>
-                      <DynamicPieChart poll={poll} />
-                    </div>
-                  )}
+                  <div className={styles.chartContainer}>
+                    <DynamicPieChart poll={poll} />
+                  </div>
                 </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </main>
     </>
