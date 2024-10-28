@@ -14,16 +14,32 @@ interface Poll {
   question: string;
   options: string[];
   votes: number[];
+  frame?: {
+    id: number;
+    imageUrl: string;
+    postUrl: string;
+  };
+}
+
+interface Frame {
+  id: number;
+  pollId: number;
+  imageUrl: string;
+  postUrl: string;
+  totalVotes: number;
+  poll: Poll;
 }
 
 const PollPage: React.FC = () => {
   const [polls, setPolls] = useState<Poll[]>([]);
+  const [frames, setFrames] = useState<Frame[]>([]);
   const [question, setQuestion] = useState("");
   const [option1, setOption1] = useState("");
   const [option2, setOption2] = useState("");
 
   useEffect(() => {
     fetchPolls();
+    fetchFrames();
   }, []);
 
   const fetchPolls = async () => {
@@ -34,6 +50,17 @@ const PollPage: React.FC = () => {
       setPolls(fetchedPolls);
     } catch (error) {
       console.error("Error fetching polls:", error);
+    }
+  };
+
+  const fetchFrames = async () => {
+    try {
+      const response = await fetch("/api/frames");
+      if (!response.ok) throw new Error("Failed to fetch frames");
+      const fetchedFrames = await response.json();
+      setFrames(fetchedFrames);
+    } catch (error) {
+      console.error("Error fetching frames:", error);
     }
   };
 
@@ -54,14 +81,31 @@ const PollPage: React.FC = () => {
         });
 
         if (!response.ok) throw new Error("Failed to create poll");
-        
-        await fetchPolls(); // Refresh polls after creation
+
+        await fetchPolls();
         setQuestion("");
         setOption1("");
         setOption2("");
       } catch (error) {
         console.error("Error creating poll:", error);
       }
+    }
+  };
+
+  const createFrame = async (pollId: number) => {
+    try {
+      const response = await fetch("/api/frames", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ pollId }),
+      });
+
+      if (!response.ok) throw new Error("Failed to create frame");
+      await fetchFrames();
+    } catch (error) {
+      console.error("Error creating frame:", error);
     }
   };
 
@@ -76,7 +120,7 @@ const PollPage: React.FC = () => {
       });
 
       if (!response.ok) throw new Error("Failed to vote");
-      await fetchPolls(); // Refresh polls after voting
+      await fetchPolls();
     } catch (error) {
       console.error("Error voting:", error);
     }
@@ -87,7 +131,7 @@ const PollPage: React.FC = () => {
       <Navbar />
       <main className={styles.pollPage}>
         <h1 className={styles.title}>Community Polls</h1>
-        
+
         <div className={styles.createPollSection}>
           <h2 className={styles.subtitle}>Create a New Poll</h2>
           <input
@@ -111,12 +155,24 @@ const PollPage: React.FC = () => {
             onChange={(e) => setOption2(e.target.value)}
             className={styles.input}
           />
-          <button 
+          <button
             onClick={createPoll}
             className={styles.createButton}
             disabled={!question || !option1 || !option2}
           >
             Create Poll
+          </button>
+          <button
+            onClick={() => {
+              const lastCreatedPoll = polls[polls.length - 1];
+              if (lastCreatedPoll) {
+                createFrame(lastCreatedPoll.id);
+              }
+            }}
+            className={styles.createFrameButton}
+            disabled={polls.length === 0}
+          >
+            Create Frame for Latest Poll
           </button>
         </div>
 
@@ -143,6 +199,30 @@ const PollPage: React.FC = () => {
                   </div>
                   <div className={styles.chartContainer}>
                     <DynamicPieChart poll={poll} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.framesSection}>
+          <h2 className={styles.subtitle}>Existing Frames</h2>
+          <div className={styles.frameContainer}>
+            {frames.map((frame) => (
+              <div key={frame.id} className={styles.frame}>
+                <h3 className={styles.frameQuestion}>{frame.poll.question}</h3>
+                <div className={styles.frameContent}>
+                  <div className={styles.frameLinks}>
+                    <a
+                      href={`/frames/${frame.pollId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.viewFrameLink}
+                    >
+                      View Frame
+                    </a>
+                    <p>Total Votes: {frame.totalVotes}</p>
                   </div>
                 </div>
               </div>

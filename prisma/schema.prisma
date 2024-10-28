@@ -1,5 +1,3 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -16,4 +14,17 @@ model Poll {
   votes     Int[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  frame     Frame?   // Remove the @relation here since it's defined in Frame model
+}
+
+model Frame {
+  id         Int      @id @default(autoincrement())
+  pollId     Int      @unique  // Add @unique to ensure one-to-one relation
+  imageUrl   String
+  postUrl    String
+  totalVotes Int      @default(0)  // Added default value
+  createdAt  DateTime @default(now())
+  poll       Poll     @relation(fields: [pollId], references: [id])
+
+  @@index([pollId])
 }
