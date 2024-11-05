@@ -14,11 +14,24 @@ interface Poll {
   question: string;
   options: string[];
   votes: number[];
+  frame?: {
+    id: number;
+    imageUrl: string;
+    postUrl: string;
+  };
+}
+
+interface Frame {
+  id: number;
+  pollId: number;
+  imageUrl: string;
+  postUrl: string;
+  totalVotes: number;
+  poll: Poll;
 }
 
 const PollPage: React.FC = () => {
   const [polls, setPolls] = useState<Poll[]>([]);
-  const [frames, setFrames] = useState<Poll[]>([]);
   const [question, setQuestion] = useState("");
   const [option1, setOption1] = useState("");
   const [option2, setOption2] = useState("");
@@ -40,18 +53,6 @@ const PollPage: React.FC = () => {
     }
   };
 
-  const fetchFrames = async () => {
-    try {
-      const response = await fetch("/api/frames");
-      if (response.ok) {
-        const fetchedFrames = await response.json();
-        setFrames(fetchedFrames);
-      }
-    } catch (error) {
-      console.error("Error fetching frames:", error);
-    }
-  };
-
   const createPoll = async () => {
     if (question && option1 && option2) {
       const newPoll = {
@@ -68,15 +69,32 @@ const PollPage: React.FC = () => {
           body: JSON.stringify(newPoll),
         });
 
-        if (response.ok) {
-          fetchPolls();
-          setQuestion("");
-          setOption1("");
-          setOption2("");
-        }
+        if (!response.ok) throw new Error("Failed to create poll");
+        
+        await fetchPolls(); // Refresh polls after creation
+        setQuestion("");
+        setOption1("");
+        setOption2("");
       } catch (error) {
         console.error("Error creating poll:", error);
       }
+    }
+  };
+
+  const createFrame = async (pollId: number) => {
+    try {
+      const response = await fetch("/api/frames", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ pollId }),
+      });
+
+      if (!response.ok) throw new Error("Failed to create frame");
+      await fetchFrames();
+    } catch (error) {
+      console.error("Error creating frame:", error);
     }
   };
 
@@ -120,6 +138,9 @@ const PollPage: React.FC = () => {
         },
         body: JSON.stringify({ pollId, optionIndex }),
       });
+
+      if (!response.ok) throw new Error("Failed to vote");
+      await fetchPolls(); // Refresh polls after voting
     } catch (error) {
       console.error(`Error voting on ${type}:`, error);
     }
@@ -129,8 +150,8 @@ const PollPage: React.FC = () => {
     <>
       <Navbar />
       <main className={styles.pollPage}>
-        <h1 className={styles.title}>Community Polls and Frames</h1>
-
+        <h1 className={styles.title}>Community Polls</h1>
+        
         <div className={styles.createPollSection}>
           <h2 className={styles.subtitle}>Create a New Poll</h2>
           <input
@@ -161,6 +182,18 @@ const PollPage: React.FC = () => {
           >
             Create Poll
           </button>
+          <button
+            onClick={() => {
+              const lastCreatedPoll = polls[polls.length - 1];
+              if (lastCreatedPoll) {
+                createFrame(lastCreatedPoll.id);
+              }
+            }}
+            className={styles.createFrameButton}
+            disabled={polls.length === 0}
+          >
+            Create Frame for Latest Poll
+          </button>
         </div>
 
         <div className={styles.pollsSection}>
@@ -186,36 +219,6 @@ const PollPage: React.FC = () => {
                   </div>
                   <div className={styles.chartContainer}>
                     <DynamicPieChart poll={poll} />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className={styles.framesSection}>
-          <h2 className={styles.subtitle}>Existing Frames</h2>
-          <div className={styles.pollContainer}>
-            {frames.map((frame) => (
-              <div key={frame.id} className={styles.poll}>
-                <h3 className={styles.pollQuestion}>{frame.question}</h3>
-                <div className={styles.pollContent}>
-                  <div className={styles.voteButtons}>
-                    {frame.options.map((option, index) => (
-                      <button
-                        key={index}
-                        className={styles.voteButton}
-                        onClick={() => handleVote("frame", frame.id, index)}
-                      >
-                        {option} ({frame.votes[index]} votes)
-                      </button>
-                    ))}
-                  </div>
-                  <div className={styles.totalVotes}>
-                    Total votes: {frame.votes.reduce((a, b) => a + b, 0)}
-                  </div>
-                  <div className={styles.chartContainer}>
-                    <DynamicPieChart poll={frame} />
                   </div>
                 </div>
               </div>
