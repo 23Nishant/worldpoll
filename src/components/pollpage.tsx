@@ -18,22 +18,37 @@ interface Poll {
 
 const PollPage: React.FC = () => {
   const [polls, setPolls] = useState<Poll[]>([]);
+  const [frames, setFrames] = useState<Poll[]>([]);
   const [question, setQuestion] = useState("");
   const [option1, setOption1] = useState("");
   const [option2, setOption2] = useState("");
 
   useEffect(() => {
     fetchPolls();
+    fetchFrames();
   }, []);
 
   const fetchPolls = async () => {
     try {
       const response = await fetch("/api/polls");
-      if (!response.ok) throw new Error("Failed to fetch polls");
-      const fetchedPolls = await response.json();
-      setPolls(fetchedPolls);
+      if (response.ok) {
+        const fetchedPolls = await response.json();
+        setPolls(fetchedPolls);
+      }
     } catch (error) {
       console.error("Error fetching polls:", error);
+    }
+  };
+
+  const fetchFrames = async () => {
+    try {
+      const response = await fetch("/api/frames");
+      if (response.ok) {
+        const fetchedFrames = await response.json();
+        setFrames(fetchedFrames);
+      }
+    } catch (error) {
+      console.error("Error fetching frames:", error);
     }
   };
 
@@ -53,32 +68,60 @@ const PollPage: React.FC = () => {
           body: JSON.stringify(newPoll),
         });
 
-        if (!response.ok) throw new Error("Failed to create poll");
-        
-        await fetchPolls(); // Refresh polls after creation
-        setQuestion("");
-        setOption1("");
-        setOption2("");
+        if (response.ok) {
+          fetchPolls();
+          setQuestion("");
+          setOption1("");
+          setOption2("");
+        }
       } catch (error) {
         console.error("Error creating poll:", error);
       }
     }
   };
 
-  const handleVote = async (pollId: number, optionIndex: number) => {
+  const handleVote = async (
+    type: "poll" | "frame",
+    pollId: number,
+    optionIndex: number
+  ) => {
+    const updateStateVotes = (
+      data: Poll[],
+      setData: React.Dispatch<React.SetStateAction<Poll[]>>
+    ) => {
+      setData((prevData) =>
+        prevData.map((item) =>
+          item.id === pollId
+            ? {
+                ...item,
+                votes: item.votes.map((vote, index) =>
+                  index === optionIndex ? vote + 1 : vote
+                ),
+              }
+            : item
+        )
+      );
+    };
+
+    // Update state immediately
+    if (type === "poll") {
+      updateStateVotes(polls, setPolls);
+    } else {
+      updateStateVotes(frames, setFrames);
+    }
+
+    // Send updated vote to the server
+    const endpoint = type === "poll" ? "/api/polls" : "/api/frames";
     try {
-      const response = await fetch("/api/polls", {
+      await fetch(endpoint, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ pollId, optionIndex }),
       });
-
-      if (!response.ok) throw new Error("Failed to vote");
-      await fetchPolls(); // Refresh polls after voting
     } catch (error) {
-      console.error("Error voting:", error);
+      console.error(`Error voting on ${type}:`, error);
     }
   };
 
@@ -86,8 +129,8 @@ const PollPage: React.FC = () => {
     <>
       <Navbar />
       <main className={styles.pollPage}>
-        <h1 className={styles.title}>Community Polls</h1>
-        
+        <h1 className={styles.title}>Community Polls and Frames</h1>
+
         <div className={styles.createPollSection}>
           <h2 className={styles.subtitle}>Create a New Poll</h2>
           <input
@@ -111,7 +154,7 @@ const PollPage: React.FC = () => {
             onChange={(e) => setOption2(e.target.value)}
             className={styles.input}
           />
-          <button 
+          <button
             onClick={createPoll}
             className={styles.createButton}
             disabled={!question || !option1 || !option2}
@@ -132,7 +175,7 @@ const PollPage: React.FC = () => {
                       <button
                         key={index}
                         className={styles.voteButton}
-                        onClick={() => handleVote(poll.id, index)}
+                        onClick={() => handleVote("poll", poll.id, index)}
                       >
                         {option} ({poll.votes[index]} votes)
                       </button>
@@ -143,6 +186,36 @@ const PollPage: React.FC = () => {
                   </div>
                   <div className={styles.chartContainer}>
                     <DynamicPieChart poll={poll} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.framesSection}>
+          <h2 className={styles.subtitle}>Existing Frames</h2>
+          <div className={styles.pollContainer}>
+            {frames.map((frame) => (
+              <div key={frame.id} className={styles.poll}>
+                <h3 className={styles.pollQuestion}>{frame.question}</h3>
+                <div className={styles.pollContent}>
+                  <div className={styles.voteButtons}>
+                    {frame.options.map((option, index) => (
+                      <button
+                        key={index}
+                        className={styles.voteButton}
+                        onClick={() => handleVote("frame", frame.id, index)}
+                      >
+                        {option} ({frame.votes[index]} votes)
+                      </button>
+                    ))}
+                  </div>
+                  <div className={styles.totalVotes}>
+                    Total votes: {frame.votes.reduce((a, b) => a + b, 0)}
+                  </div>
+                  <div className={styles.chartContainer}>
+                    <DynamicPieChart poll={frame} />
                   </div>
                 </div>
               </div>

@@ -12,7 +12,7 @@ const Navbar: React.FC = () => {
       </div>
       <ul className={styles.navLinks}>
         <li>
-          <Link href="/">
+          <Link href="/framespage">
             <span className={styles.navLink}>Farcaster</span>
           </Link>
         </li>

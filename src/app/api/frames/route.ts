@@ -1,19 +1,18 @@
-// app/api/polls/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 
 export async function GET() {
   try {
-    const polls = await prisma.poll.findMany({
+    const frames = await prisma.frame.findMany({
       orderBy: {
         createdAt: 'desc',
       },
     });
     
-    return NextResponse.json(polls);
+    return NextResponse.json(frames);
   } catch {
     return NextResponse.json(
-      { error: 'Failed to fetch polls' },
+      { error: 'Failed to fetch frames' },
       { status: 500 }
     );
   }
@@ -25,12 +24,12 @@ export async function POST(request: NextRequest) {
 
     if (!question || !options || options.length < 2) {
       return NextResponse.json(
-        { error: 'Invalid poll data' },
+        { error: 'Invalid frame data' },
         { status: 400 }
       );
     }
 
-    const poll = await prisma.poll.create({
+    const frame = await prisma.frame.create({
       data: {
         question,
         options,
@@ -38,10 +37,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(poll, { status: 201 });
+    return NextResponse.json(frame, { status: 201 });
   } catch {
     return NextResponse.json(
-      { error: 'Failed to create poll' },
+      { error: 'Failed to create frame' },
       { status: 500 }
     );
   }
@@ -49,28 +48,28 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { pollId, optionIndex } = await request.json();
+    const { frameId, optionIndex } = await request.json();
 
-    const poll = await prisma.poll.findUnique({
-      where: { id: pollId },
+    const frame = await prisma.frame.findUnique({
+      where: { id: frameId },
     });
 
-    if (!poll) {
+    if (!frame) {
       return NextResponse.json(
-        { error: 'Poll not found' },
+        { error: 'Frame not found' },
         { status: 404 }
       );
     }
 
-    const newVotes = [...poll.votes];
+    const newVotes = [...frame.votes];
     newVotes[optionIndex] += 1;
 
-    const updatedPoll = await prisma.poll.update({
-      where: { id: pollId },
+    const updatedFrame = await prisma.frame.update({
+      where: { id: frameId },
       data: { votes: newVotes },
     });
 
-    return NextResponse.json(updatedPoll);
+    return NextResponse.json(updatedFrame);
   } catch {
     return NextResponse.json(
       { error: 'Failed to update vote' },

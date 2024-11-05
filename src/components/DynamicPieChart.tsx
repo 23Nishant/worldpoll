@@ -1,32 +1,29 @@
-import React from 'react';
-import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+// src/app/components/DynamicPieChart.tsx
+
+import React from "react";
+import { Pie } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-interface Poll {
-  question: string;
-  options: string[];
+interface DynamicPieChartProps {
+  labels: string[];
   votes: number[];
 }
 
-interface DynamicPieChartProps {
-  poll: Poll;
-}
-
-const DynamicPieChart: React.FC<DynamicPieChartProps> = ({ poll }) => {
+const DynamicPieChart: React.FC<DynamicPieChartProps> = ({ labels, votes }) => {
   const data = {
-    labels: poll.options,
+    labels,
     datasets: [
       {
-        data: poll.votes,
+        data: votes,
         backgroundColor: [
-          'rgba(0, 0, 0, 0.8)',
-          'rgba(0, 0, 0, 0.5)',
+          "rgba(0, 0, 0, 0.8)",
+          "rgba(0, 0, 0, 0.5)",
         ],
         borderColor: [
-          'rgba(0, 0, 0, 1)',
-          'rgba(0, 0, 0, 1)',
+          "rgba(0, 0, 0, 1)",
+          "rgba(0, 0, 0, 1)",
         ],
         borderWidth: 1,
       },
@@ -37,7 +34,7 @@ const DynamicPieChart: React.FC<DynamicPieChartProps> = ({ poll }) => {
     responsive: true,
     plugins: {
       legend: {
-        position: 'bottom' as const,
+        position: "bottom" as const,
       },
       title: {
         display: false,

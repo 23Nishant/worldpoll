@@ -17,3 +17,11 @@ model Poll {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Frame {
+  id        Int      @id @default(autoincrement())
+  question  String
+  options   String[]
+  votes     Int[]
+  createdAt DateTime @default(now())
+}
