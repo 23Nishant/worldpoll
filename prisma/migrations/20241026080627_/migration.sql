@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Poll" ALTER COLUMN "votes" SET DEFAULT ARRAY[]::INTEGER[];

@@ -28,11 +28,3 @@ model Frame {
 
   @@index([pollId])
 }
-
-model Frame {
-  id        Int      @id @default(autoincrement())
-  question  String
-  options   String[]
-  votes     Int[]
-  createdAt DateTime @default(now())
-}

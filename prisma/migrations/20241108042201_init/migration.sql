@@ -1,12 +1,14 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE "Poll" (
+    "id" SERIAL NOT NULL,
+    "question" TEXT NOT NULL,
+    "options" TEXT[],
+    "votes" INTEGER[],
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-  - Added the required column `updatedAt` to the `Poll` table without a default value. This is not possible if the table is not empty.
-
-*/
--- AlterTable
-ALTER TABLE "Poll" ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL,
-ALTER COLUMN "votes" DROP DEFAULT;
+    CONSTRAINT "Poll_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "Frame" (
