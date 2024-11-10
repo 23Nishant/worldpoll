@@ -18,10 +18,11 @@ interface Poll {
 
 interface Frame {
   id: number;
-  title: string;
-  description: string;
-  options: string[];
-  votes: number[];
+  pollId: number;
+  imageUrl: string;
+  postUrl: string;
+  totalVotes: number;
+  createdAt: string;
 }
 
 const PollPage: React.FC = () => {
@@ -29,9 +30,11 @@ const PollPage: React.FC = () => {
   const [frames, setFrames] = useState<Frame[]>([]);
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState<string[]>(["", ""]);
-  const [frameTitle, setFrameTitle] = useState("");
-  const [frameDescription, setFrameDescription] = useState("");
-  const [frameOptions, setFrameOptions] = useState<string[]>(["", ""]);
+  
+  // New state for frame creation
+  const [selectedPollId, setSelectedPollId] = useState<number | null>(null);
+  const [frameImageUrl, setFrameImageUrl] = useState("");
+  const [framePostUrl, setFramePostUrl] = useState("");
 
   useEffect(() => {
     fetchPolls();
@@ -90,34 +93,6 @@ const PollPage: React.FC = () => {
     }
   };
 
-  const handleFrameVote = async (frameId: number, optionIndex: number) => {
-    setFrames((prevFrames) =>
-      prevFrames.map((frame) =>
-        frame.id === frameId
-          ? {
-              ...frame,
-              votes: frame.votes.map((vote, idx) =>
-                idx === optionIndex ? vote + 1 : vote
-              ),
-            }
-          : frame
-      )
-    );
-
-    try {
-      await fetch("/api/frames", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ frameId, optionIndex }),
-      });
-    } catch (error) {
-      console.error("Error voting on frame:", error);
-      fetchFrames();
-    }
-  };
-
   const handleCreatePoll = async () => {
     if (!question || options.some((opt) => opt.trim() === "")) {
       alert("Please fill in the question and all options.");
@@ -145,8 +120,8 @@ const PollPage: React.FC = () => {
   };
 
   const handleCreateFrame = async () => {
-    if (!frameTitle || !frameDescription || frameOptions.some((opt) => opt.trim() === "")) {
-      alert("Please fill in all fields.");
+    if (!selectedPollId || !frameImageUrl || !framePostUrl) {
+      alert("Please fill in all frame fields and select a poll.");
       return;
     }
 
@@ -156,29 +131,27 @@ const PollPage: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title: frameTitle, description: frameDescription, options: frameOptions }),
+        body: JSON.stringify({
+          pollId: selectedPollId,
+          imageUrl: frameImageUrl,
+          postUrl: framePostUrl,
+        }),
       });
 
       if (response.ok) {
         const newFrame = await response.json();
         setFrames((prevFrames) => [newFrame, ...prevFrames]);
-        setFrameTitle("");
-        setFrameDescription("");
-        setFrameOptions(["", ""]);
+        setSelectedPollId(null);
+        setFrameImageUrl("");
+        setFramePostUrl("");
       }
     } catch (error) {
       console.error("Error creating frame:", error);
     }
   };
 
-  // Add option feature for polls
   const handleAddOption = () => {
     setOptions((prevOptions) => [...prevOptions, ""]);
-  };
-
-  // Add option feature for frames
-  const handleAddFrameOption = () => {
-    setFrameOptions((prevOptions) => [...prevOptions, ""]);
   };
 
   return (
@@ -223,37 +196,32 @@ const PollPage: React.FC = () => {
         {/* Frame Creation Section */}
         <section className={styles.createPollSection}>
           <h2>Create a New Frame</h2>
+          <select
+            value={selectedPollId || ""}
+            onChange={(e) => setSelectedPollId(Number(e.target.value))}
+            className={styles.inputField}
+          >
+            <option value="">Select a Poll</option>
+            {polls.map((poll) => (
+              <option key={poll.id} value={poll.id}>
+                {poll.question}
+              </option>
+            ))}
+          </select>
           <input
             type="text"
-            placeholder="Enter frame title"
-            value={frameTitle}
-            onChange={(e) => setFrameTitle(e.target.value)}
+            placeholder="Enter image URL"
+            value={frameImageUrl}
+            onChange={(e) => setFrameImageUrl(e.target.value)}
             className={styles.inputField}
           />
-          <textarea
-            placeholder="Enter frame description"
-            value={frameDescription}
-            onChange={(e) => setFrameDescription(e.target.value)}
+          <input
+            type="text"
+            placeholder="Enter post URL"
+            value={framePostUrl}
+            onChange={(e) => setFramePostUrl(e.target.value)}
             className={styles.inputField}
           />
-          {frameOptions.map((option, index) => (
-            <div key={index} className={styles.optionContainer}>
-              <input
-                type="text"
-                placeholder={`Option ${index + 1}`}
-                value={option}
-                onChange={(e) => {
-                  const newOptions = [...frameOptions];
-                  newOptions[index] = e.target.value;
-                  setFrameOptions(newOptions);
-                }}
-                className={styles.inputField}
-              />
-            </div>
-          ))}
-          <button onClick={handleAddFrameOption} className={styles.addOptionButton}>
-            Add Option
-          </button>
           <button onClick={handleCreateFrame} className={styles.createButton}>
             Create Frame
           </button>
@@ -284,18 +252,21 @@ const PollPage: React.FC = () => {
           <h2>Frames</h2>
           {frames.map((frame) => (
             <div key={frame.id} className={styles.frameContainer}>
-              <h3>{frame.title}</h3>
-              <p>{frame.description}</p>
-              {frame.options.map((option, index) => (
-                <div key={index} className={styles.option}>
-                  <button onClick={() => handleFrameVote(frame.id, index)}>
-                    {option} ({frame.votes[index]} votes)
-                  </button>
-                </div>
-              ))}
-              <div className={styles.chartContainer}>
-                <DynamicPieChart labels={frame.options} votes={frame.votes} />
-              </div>
+              <img 
+                src={frame.imageUrl} 
+                alt="Frame" 
+                className={styles.frameImage}
+              />
+              <a 
+                href={frame.postUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={styles.frameLink}
+              >
+                View Post
+              </a>
+              <p>Total Votes: {frame.totalVotes}</p>
+              <p>Created: {new Date(frame.createdAt).toLocaleDateString()}</p>
             </div>
           ))}
         </section>
