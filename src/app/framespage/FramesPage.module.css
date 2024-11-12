@@ -1,63 +1,299 @@
-/* src/app/framespage/FramesPage.module.css */
+/* src/app/framespage/framespage.module.css */
 
-.container {
-  padding: 20px;
-  max-width: 800px;
+.framesPage {
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 2rem;
+  background-color: #f8fafc;
+  min-height: 100vh;
 }
 
 .title {
-  font-size: 2rem;
-  margin-bottom: 20px;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 2rem;
   text-align: center;
+  letter-spacing: -0.02em;
 }
 
-.frame {
-  border: 1px solid #ddd;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  background-color: #f9f9f9;
-}
-
-.frame h3 {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-}
-
-.frameContent {
+/* Error Message */
+.error {
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
 }
 
-.voteButtons {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
+.closeError {
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
 }
 
-.voteButton {
-  padding: 8px 12px;
-  border-radius: 5px;
-  border: none;
-  background-color: #4caf50;
+/* Create Frame Section */
+.createFrameSection {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  margin-bottom: 2rem;
+}
+
+.createFrameSection h2 {
+  font-size: 1.5rem;
+  color: #334155;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.inputField {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  transition: border-color 0.15s ease;
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.createButton {
+  background-color: #3b82f6;
   color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.createButton:hover {
+  background-color: #2563eb;
+}
+
+.createButton:disabled {
+  background-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* Frame Preview Section */
+.framePreviewSection {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  margin-bottom: 2rem;
+}
+
+.preview {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.previewImage {
+  width: 100%;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+}
+
+.previewContent {
+  background-color: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+}
+
+.codeBlock {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-family: monospace;
+  white-space: pre-wrap;
+  margin: 1rem 0;
+}
+
+.copyButton {
+  background-color: #475569;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.copyButton:hover {
+  background-color: #334155;
+}
+
+/* Existing Frames Section */
+.framesSection {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.framesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.frame {
+  background-color: white;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.frame:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.frameImage {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.frameContent {
+  padding: 1.5rem;
+}
+
+.pollInfo h3 {
+  font-size: 1.125rem;
+  color: #334155;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.pollOptions {
+  margin-bottom: 1rem;
+}
+
+.pollOptions h4 {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+
+.pollOptions ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.pollOptions li {
+  padding: 0.5rem;
+  background-color: #f8fafc;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: #475569;
+}
+
+.frameStats {
+  margin: 1rem 0;
+  padding: 1rem 0;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.frameStats p {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin: 0.25rem 0;
+}
+
+.frameActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.frameLink, .viewFrameButton {
+  flex: 1;
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.frameLink {
+  background-color: #3b82f6;
+  color: white;
+  text-decoration: none;
+}
+
+.frameLink:hover {
+  background-color: #2563eb;
+}
+
+.viewFrameButton {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
   cursor: pointer;
 }
 
-.voteButton:hover {
-  background-color: #45a049;
+.viewFrameButton:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
 }
 
-.totalVotes {
-  margin-top: 10px;
-  font-size: 0.9rem;
-  color: #888;
+/* Loading State */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-size: 1.25rem;
+  color: #64748b;
 }
 
-.chartContainer {
-  margin-top: 20px;
-  width: 100%;
-  max-width: 300px;
+/* Responsive Design */
+@media (max-width: 768px) {
+  .framesPage {
+    padding: 1rem;
+  }
+
+  .preview {
+    grid-template-columns: 1fr;
+  }
+
+  .frameActions {
+    flex-direction: column;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .framesGrid {
+    grid-template-columns: 1fr;
+  }
 }

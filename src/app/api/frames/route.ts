@@ -1,19 +1,62 @@
+// src/app/api/frames/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
+
+interface Frame {
+  id: number;
+  pollId: number;
+  imageUrl: string;
+  postUrl: string;
+  totalVotes: number;
+  createdAt: string;
+  poll?: {
+    id: number;
+    question: string;
+    options: string[];
+    votes: number[];
+  };
+}
+
+const generateFrameHtml = (frame: Frame): string => {
+  if (!frame.poll) return '';
+  
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <title>${frame.poll.question}</title>
+  <meta property="fc:frame" content="vNext" />
+  <meta property="fc:frame:image" content="${frame.imageUrl}" />
+  <meta property="fc:frame:image:aspect_ratio" content="1.91:1" />
+  <meta property="fc:frame:post_url" content="${frame.postUrl}" />
+  ${frame.poll.options.map((option: string, index: number) => `
+  <meta property="fc:frame:button:${index + 1}" content="${option}" />
+  <meta property="fc:frame:button:${index + 1}:action" content="post" />`).join('')}
+</head>
+<body>
+  <h1>${frame.poll.question}</h1>
+</body>
+</html>`;
+};
 
 export async function GET() {
   try {
     const frames = await prisma.frame.findMany({
       include: {
-        poll: true, // Include the associated poll data
+        poll: true,
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
     
-    return NextResponse.json(frames);
-  } catch {
+    const framesWithHtml = frames.map(frame => ({
+      ...frame,
+      frameHtml: generateFrameHtml(frame as Frame)
+    }));
+    
+    return NextResponse.json(framesWithHtml);
+  } catch (error) {
+    console.error('Error fetching frames:', error);
     return NextResponse.json(
       { error: 'Failed to fetch frames' },
       { status: 500 }
@@ -32,7 +75,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if a frame already exists for this poll
     const existingFrame = await prisma.frame.findUnique({
       where: { pollId: Number(pollId) },
     });
@@ -56,7 +98,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(frame, { status: 201 });
+    const frameWithHtml = {
+      ...frame,
+      frameHtml: generateFrameHtml(frame as Frame)
+    };
+
+    return NextResponse.json(frameWithHtml, { status: 201 });
   } catch (error) {
     console.error('Error creating frame:', error);
     return NextResponse.json(
@@ -91,8 +138,14 @@ export async function PUT(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(updatedFrame);
-  } catch {
+    const frameWithHtml = {
+      ...updatedFrame,
+      frameHtml: generateFrameHtml(updatedFrame as Frame)
+    };
+
+    return NextResponse.json(frameWithHtml);
+  } catch (error) {
+    console.error('Error updating vote:', error);
     return NextResponse.json(
       { error: 'Failed to update vote' },
       { status: 500 }
