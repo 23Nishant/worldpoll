@@ -11,6 +11,7 @@
   "dependencies": {
     "@auth/core": "^0.34.2",
     "@auth/nextjs": "^0.0.0-380f8d56",
+    "@neynar/nodejs-sdk": "^2.7.0",
     "@prisma/client": "^5.21.1",
     "@web3-react/core": "^8.2.3",
     "@web3-react/metamask": "^8.2.4",

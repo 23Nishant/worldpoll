@@ -21,6 +21,7 @@ interface Frame {
   createdAt: string;
   poll?: Poll;
   frameHtml?: string;
+  farcasterCastHash?: string;
 }
 
 export default function FramesPage() {
@@ -32,6 +33,7 @@ export default function FramesPage() {
   const [selectedFrame, setSelectedFrame] = useState<Frame | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   useEffect(() => {
     Promise.all([fetchFrames(), fetchPolls()])
@@ -101,6 +103,52 @@ export default function FramesPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error creating frame');
       console.error("Error creating frame:", err);
+    }
+  };
+
+  const publishToFarcaster = async (frame: Frame) => {
+    if (!frame.frameHtml) {
+      setError("No frame HTML available to publish");
+      return;
+    }
+
+    setIsPublishing(true);
+    try {
+      const response = await fetch("/api/publish-frame", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          frameId: frame.id,
+          frameHtml: frame.frameHtml,
+          imageUrl: frame.imageUrl,
+          postUrl: frame.postUrl
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to publish frame');
+      }
+
+      const { castHash } = await response.json();
+      
+      // Update the frame with the cast hash
+      setFrames(prevFrames => 
+        prevFrames.map(f => 
+          f.id === frame.id 
+            ? { ...f, farcasterCastHash: castHash } 
+            : f
+        )
+      );
+
+      alert("Frame published successfully to Farcaster!");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error publishing to Farcaster');
+      console.error("Error publishing to Farcaster:", err);
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -186,12 +234,21 @@ export default function FramesPage() {
                 <pre className={styles.codeBlock}>
                   {selectedFrame.frameHtml}
                 </pre>
-                <button
-                  onClick={() => copyFrameHtml(selectedFrame.frameHtml || "")}
-                  className={styles.copyButton}
-                >
-                  Copy HTML
-                </button>
+                <div className={styles.previewActions}>
+                  <button
+                    onClick={() => copyFrameHtml(selectedFrame.frameHtml || "")}
+                    className={styles.copyButton}
+                  >
+                    Copy HTML
+                  </button>
+                  <button
+                    onClick={() => publishToFarcaster(selectedFrame)}
+                    className={styles.publishButton}
+                    disabled={isPublishing}
+                  >
+                    {isPublishing ? "Publishing..." : "Publish to Farcaster"}
+                  </button>
+                </div>
               </div>
             </div>
           </section>
@@ -225,6 +282,18 @@ export default function FramesPage() {
                   <div className={styles.frameStats}>
                     <p>Total Votes: {frame.totalVotes}</p>
                     <p>Created: {new Date(frame.createdAt).toLocaleDateString()}</p>
+                    {frame.farcasterCastHash && (
+                      <p>
+                        <a 
+                          href={`https://warpcast.com/~/cast/${frame.farcasterCastHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.castLink}
+                        >
+                          View on Farcaster
+                        </a>
+                      </p>
+                    )}
                   </div>
                   <div className={styles.frameActions}>
                     <a 
@@ -241,6 +310,15 @@ export default function FramesPage() {
                     >
                       View Frame HTML
                     </button>
+                    {!frame.farcasterCastHash && (
+                      <button
+                        onClick={() => publishToFarcaster(frame)}
+                        className={styles.publishButton}
+                        disabled={isPublishing}
+                      >
+                        {isPublishing ? "Publishing..." : "Publish to Farcaster"}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
