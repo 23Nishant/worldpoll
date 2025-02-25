@@ -231,17 +231,23 @@ const PollPage: React.FC = () => {
         <section className={styles.pollsSection}>
           <h2>Polls</h2>
           {polls.map((poll) => (
-            <div key={poll.id} className={styles.pollContainer}>
-              <h3>{poll.question}</h3>
-              {poll.options.map((option, index) => (
-                <div key={index} className={styles.option}>
-                  <button onClick={() => handleVote(poll.id, index)}>
-                    {option} ({poll.votes[index]} votes)
-                  </button>
+            <div key={poll.id} className={styles.pollBox}>
+              <h3 className={styles.pollQuestion}>{poll.question}</h3>
+              <div className={styles.pollContent}>
+                <div className={styles.voteButtons}>
+                  {poll.options.map((option, index) => (
+                    <button 
+                      key={index} 
+                      className={styles.voteButton}
+                      onClick={() => handleVote(poll.id, index)}
+                    >
+                      {option} ({poll.votes[index]} votes)
+                    </button>
+                  ))}
                 </div>
-              ))}
-              <div className={styles.chartContainer}>
-                <DynamicPieChart labels={poll.options} votes={poll.votes} />
+                <div className={styles.chartContainer}>
+                  <DynamicPieChart labels={poll.options} votes={poll.votes} />
+                </div>
               </div>
             </div>
           ))}

@@ -18,13 +18,11 @@ model Poll {
 }
 
 model Frame {
-  id         Int      @id @default(autoincrement())
-  pollId     Int      @unique  // Add @unique to ensure one-to-one relation
-  imageUrl   String
-  postUrl    String
-  totalVotes Int      @default(0)  // Added default value
-  createdAt  DateTime @default(now())
-  poll       Poll     @relation(fields: [pollId], references: [id])
-
-  @@index([pollId])
+  id        Int      @id @default(autoincrement())
+  pollId    Int
+  imageUrl  String
+  postUrl   String
+  totalVotes Int     @default(0)
+  createdAt DateTime @default(now())
+  poll      Poll     @relation(fields: [pollId], references: [id])
 }
